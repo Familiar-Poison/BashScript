@@ -30,27 +30,20 @@ email () {
 
     else
         current_datetime=$(date +'%Y%m%d %H:%M')
-        email_subject="$current_datetime memory_check - critical"
-        email_content=$(ps aux --sort=-%mem | awk '{print $1, $2, $4, $11}' | head -n 11 | column -t)
+        email_subject="$current_datetime cpu_check - critical"
+        email_content=$(ps aux --sort=-%cpu | awk '{print $1, $2, $3, $11}' | head -n 11 | column -t)
         echo -e "Subject: $email_subject\n$email_content" | msmtp "$email_recipient"
         echo "Report Status: Email report sent."
     fi
-
+    
 }
 
 
 main () {
 
     # free
-    TOTAL_MEMORY=$( free | grep Mem: | awk '{ print $2 }')
-    USED_MEMORY=$( free | grep Mem: | awk '{ print $3 }')
-    #FREE_MEMORY=$( free | grep Mem: | awk '{ print $4 }')
-
-    # echo "TOTAL_M: $TOTAL_MEMORY"
-    # echo "USED_M: $USED_MEMORY"
-    
-    USED_PERCENT=$(echo "scale=2; 100 * $USED_MEMORY / $TOTAL_MEMORY" | bc)
-    #FREE_PERCENT=$(echo "scale=2; 100 * $FREE_MEMORY / $TOTAL_MEMORY" | bc)
+    TOTAL_CPU=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
+    # echo "$TOTAL_CPU"
 
     while getopts ":c:w:e:" opt; do
         case ${opt} in
@@ -98,20 +91,20 @@ main () {
 
     # Main logic
 
-    echo "MEMORY USAGE: $USED_PERCENT"
+    echo "CPU USAGE: $TOTAL_CPU"
     # echo "CRITICAL: $CRITICAL_PERCENT"
     # echo "WARNING: $WARNING_PERCENT"
 
-    if (( $(echo "$USED_PERCENT >= $CRITICAL_THRESHOLD" | bc -l) )); then
+    if (( $(echo "$TOTAL_CPU >= $CRITICAL_THRESHOLD" | bc -l) )); then
         echo "Critical threshold has been reached!"
         email
         exit 2
     
-    elif (( $(echo "$USED_PERCENT >= $WARNING_THRESHOLD && $USED_PERCENT < $CRITICAL_THRESHOLD" | bc -l) )); then
+    elif (( $(echo "$TOTAL_CPU >= $WARNING_THRESHOLD && $TOTAL_CPU < $CRITICAL_THRESHOLD" | bc -l) )); then
         echo "Warning threshold has been reached!"
         exit 1
 
-    elif (( $(echo "$USED_PERCENT < $WARNING_THRESHOLD" | bc -l) )); then
+    elif (( $(echo "$TOTAL_CPU < $WARNING_THRESHOLD" | bc -l) )); then
         echo "Usage is still within threshold"
         exit 0
     fi    
