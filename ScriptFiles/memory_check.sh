@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# To use BASH: Use Ubuntu -> /mnt/d/Document/BashScript
+
 # To check exit code -> #echo "Exit code $?"
 error () {
   printf '%s\n' "$*"

@@ -21,7 +21,6 @@ EOF
 
     # echo "Usage: ./$0 [-c critical threshold %] [-w warning threshold %] [-e email address]"
     exit 128
-    #echo "Exit code $?"
 }
 
 email () {
@@ -30,8 +29,8 @@ email () {
 
     else
         current_datetime=$(date +'%Y%m%d %H:%M')
-        email_subject="$current_datetime cpu_check - critical"
-        email_content=$(ps aux --sort=-%cpu | awk '{print $1, $2, $3, $11}' | head -n 11 | column -t)
+        email_subject="$current_datetime disk_check - critical"
+        email_content="$DISK_PARTITION_CRITICAL"
         echo -e "Subject: $email_subject\n$email_content" | msmtp "$email_recipient"
         echo "Report Status: Email report sent."
     fi
@@ -41,10 +40,15 @@ email () {
 
 main () {
 
-    # free
-    # TOTAL_CPU=$(top -bn1 | grep "Cpu(s)" | \sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | \awk '{print 100 - $1"%"}')
-    USED_PERCENT=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
-    # echo "$TOTAL_CPU"
+    # #df -h
+    # thresholds=105
+    # # DISK_PARTITION=$( df -P | awk '0+$5 >= 75 {print $1}')
+    # # DISK_PARTITION=$( df -P | awk '0+$5 >= $thresholds {print}')
+    # DISK_PARTITION=$(df -P | awk -v thresholds="$thresholds" 'NR > 1 && 0+$5 >= thresholds {print}')
+    # echo "$DISK_PARTITION"
+
+    # exit 0
+    
 
     while getopts ":c:w:e:" opt; do
         case ${opt} in
@@ -92,22 +96,34 @@ main () {
 
     # Main logic
 
-    echo "CPU USAGE: $USED_PERCENT"
-    # echo "CRITICAL: $CRITICAL_PERCENT"
-    # echo "WARNING: $WARNING_PERCENT"
+    # #df -h
+    # thresholds=105
+    # # DISK_PARTITION=$( df -P | awk '0+$5 >= 75 {print $1}')
+    # # DISK_PARTITION=$( df -P | awk '0+$5 >= $thresholds {print}')
+    # DISK_PARTITION=$(df -P | awk -v thresholds="$thresholds" 'NR > 1 && 0+$5 >= thresholds {print}')
+    # echo "$DISK_PARTITION"
 
-    if (( $(echo "$USED_PERCENT >= $CRITICAL_THRESHOLD" | bc -l) )); then
+    # exit 0
+
+    DISK_PARTITION_WARNING=$(df -P | awk -v thresholds="$WARNING_THRESHOLD" 'NR > 1 && 0+$5 >= thresholds {print}')
+    DISK_PARTITION_CRITICAL=$(df -P | awk -v thresholds="$CRITICAL_THRESHOLD" 'NR > 1 && 0+$5 >= thresholds {print}')
+
+
+    if [ -z "$DISK_PARTITION_WARNING" ] && [ -z "$DISK_PARTITION_CRITICAL" ]; then
+        echo "Usage is still within threshold"
+        exit 0
+
+    elif [ -n "$DISK_PARTITION_WARNING" ] && [ -z "$DISK_PARTITION_CRITICAL" ]; then
+        echo "Warning threshold has been reached!"
+        echo "$DISK_PARTITION_WARNING"
+        exit 1
+
+    elif [ -n "$DISK_PARTITION_CRITICAL" ]; then
         echo "Critical threshold has been reached!"
+        echo "$DISK_PARTITION_CRITICAL"
         email
         exit 2
     
-    elif (( $(echo "$USED_PERCENT >= $WARNING_THRESHOLD && $USED_PERCENT < $CRITICAL_THRESHOLD" | bc -l) )); then
-        echo "Warning threshold has been reached!"
-        exit 1
-
-    elif (( $(echo "$USED_PERCENT < $WARNING_THRESHOLD" | bc -l) )); then
-        echo "Usage is still within threshold"
-        exit 0
     fi    
 
     
