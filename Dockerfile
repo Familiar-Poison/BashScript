@@ -7,6 +7,9 @@ RUN curl -o /etc/ssl/certs/ca-certificates.crt https://curl.se/ca/cacert.pem
 
 RUN mv /mnt/app/.msmtprc ~/.msmtprc
 
+RUN yum install -y epel-release
+RUN yum install -y msmtp msmtp-mta
+RUN chmod 600 ~/.msmtprc
 #RUN pip install -r /mnt/app/requirements.txt
 
 #RUN apt-get update && apt-get install -y iputils-ping
