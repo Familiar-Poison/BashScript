@@ -5,6 +5,13 @@ COPY ./ScriptFiles /mnt/app
 
 RUN curl -o /etc/ssl/certs/ca-certificates.crt https://curl.se/ca/cacert.pem
 
+# Set environment variables for SMTP credentials
+# From Github secrets
+ARG SMTP_USER
+ARG SMTP_PASSWORD
+ENV SMTP_USER=${SMTP_USER}
+ENV SMTP_PASSWORD=${SMTP_PASSWORD}
+
 RUN mv /mnt/app/.msmtprc ~/.msmtprc
 
 RUN yum install -y epel-release
