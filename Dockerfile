@@ -29,6 +29,6 @@ RUN yum install -y epel-release
 RUN yum install -y msmtp msmtp-mta
 RUN chmod 600 ~/.msmtprc
 
-RUN chmod +x cpu_check.sh && \
-    chmod +x disk_check.sh && \
-    chmod +x memory_check.sh
+RUN chmod +x /mnt/app/cpu_check.sh && \
+    chmod +x /mnt/app/disk_check.sh && \
+    chmod +x /mnt/app/memory_check.sh
