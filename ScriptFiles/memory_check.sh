@@ -2,10 +2,6 @@
 
 
 # To check exit code -> #echo "Exit code $?"
-error () {
-  printf '%s\n' "$*"
-  exit 1
-}
 
 usage () {
 
