@@ -1,6 +1,6 @@
 # Base image
 # Something
-FROM redhat/ubi9:latest
+FROM rockylinux:9
 
 COPY ./ScriptFiles /mnt/app
 
@@ -27,7 +27,8 @@ RUN echo "account default" > ~/.msmtprc && \
 
 
 RUN yum install -y epel-release
-RUN yum install -y msmtp msmtp-mta
+RUN yum install -y msmtp 
+# yum install -y msmtp msmtp-mta
 RUN chmod 600 ~/.msmtprc
 
 RUN chmod +x /mnt/app/cpu_check.sh && \
