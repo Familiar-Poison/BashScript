@@ -1,6 +1,6 @@
 # Base image
 # Something
-FROM centos:7
+FROM redhat/ubi9-minimal
 
 COPY ./ScriptFiles /mnt/app
 
