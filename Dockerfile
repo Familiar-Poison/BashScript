@@ -1,4 +1,5 @@
 # Base image
+# Something
 FROM centos:7
 
 COPY ./ScriptFiles /mnt/app
