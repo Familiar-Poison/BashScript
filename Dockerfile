@@ -1,6 +1,6 @@
 # Base image
 # Something
-FROM redhat/ubi9-minimal
+FROM redhat/ubi9:latest
 
 COPY ./ScriptFiles /mnt/app
 
